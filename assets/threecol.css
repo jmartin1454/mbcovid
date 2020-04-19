@@ -1,0 +1,19 @@
+.left {
+    float: left;
+    width: 20%;
+    min-height: 20px;
+    clear:both;
+    background: #fff;
+}
+
+.middle {
+    float: left;
+    width: 60%;
+    background: #fff;
+}
+
+.right {
+    float: left;
+    width: 20%;
+    background: #fff;
+}

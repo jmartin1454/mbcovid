@@ -11,10 +11,7 @@ from collections import OrderedDict
 import numpy as np
 import datetime
 
-external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
-
-app = Dash(__name__, external_stylesheets=external_stylesheets)
-
+app = Dash(__name__)
 
 INTERVAL = 30
 
@@ -22,22 +19,18 @@ INTERVAL = 30
 
 def layout_func1():
     dates,news,totals,recov,hosp,ICU,death,ie,n,pm,south,wpg=get_data()
-    print("Hi %d"%wpg)
     return html.Div(children=[
         html.H1(children='Manitoba COVID Cases'),
-        #html.Div(children='''
-        #Dash: A web application framework for Python.
-        #'''),
-
         dcc.Graph(
             id='example-graph',
             figure={
                 'data': [
                     {'x': dates, 'y': news, 'type': 'bar', 'name': 'New Cases'},
-                    {'x': dates, 'y': totals, 'type': 'bar', 'name': u'Total Cases'},
+                    {'x': dates, 'y': totals, 'type': 'scatter','mode':'lines+markers', 'name': u'Cumulative'},
                 ],
                 'layout': {
-                    'title': 'Manitoba COVID cases'
+                    'title': 'Cumulative and New COVID cases',
+                    'font': {'family':'Oswald, sans-serif','size':'26'}
                 }
             }
         )
@@ -45,50 +38,22 @@ def layout_func1():
 
 def layout_func2():
     dates,news,totals,recov,hosp,ICU,death,ie,n,pm,south,wpg=get_data()
-    print("Hi %d"%wpg)
     return html.Div(children=[
         html.H1(children='Manitoba COVID Cases'),
-        #html.Div(children='''
-        #Dash: A web application framework for Python.
-        #'''),
-
         dcc.Graph(
             id='example-graph',
             figure={
                 'data': [
                     {'x': dates, 'y': news, 'type': 'bar', 'name': 'New Cases'},
-                    #{'x': dates, 'y': totals, 'type': 'bar', 'name': u'Total Cases'},
                 ],
                 'layout': {
                     'title': 'New COVID cases in Manitoba',
-                    'font-size': '26px'
+                    'font': {'family':'Oswald, sans-serif','size':'26'}
                 }
             }
         )
     ])
 
-def layout_func3():
-    dates,news,totals,recov,hosp,ICU,death,ie,n,pm,south,wpg=get_data()
-    print("Hi %d"%wpg)
-    return html.Div(children=[
-        html.H1(children='Manitoba COVID Cases'),
-        #html.Div(children='''
-        #Dash: A web application framework for Python.
-        #'''),
-
-        dcc.Graph(
-            id='example-graph',
-            figure={
-                'data': [
-                    #{'x': dates, 'y': news, 'type': 'bar', 'name': 'New Cases'},
-                    {'x': dates, 'y': totals, 'type': 'bar', 'name': u'Total Cases'},
-                ],
-                #'layout': {
-                #    'title': 'Dash Data Visualization'
-                #}
-            }
-        )
-    ])
 
 def layout_func4():
     dates,news,totals,recov,hosp,ICU,death,ie,n,pm,south,wpg=get_data()
@@ -100,35 +65,54 @@ def layout_func4():
     df = pd.DataFrame(data)
     return html.Div(children=[
         html.H1(children='Manitoba COVID Cases'),
-        dash_table.DataTable(
-            id='table',
-            columns=[{"name": i, "id": i} for i in df.columns],
-            data=df.to_dict('records'),
-            style_table={
-                'width': '100%'
-            },
-            style_cell_conditional=[
-                {
-                    'if': {'column_id': 'Regions'},
-                    'textAlign': 'left'
+        html.Div(className='left'),
+        html.Div(className='middle',children=[
+            html.H1(children='Regional Distribution'),
+            dash_table.DataTable(
+                id='table',
+                columns=[{"name": i, "id": i} for i in df.columns],
+                data=df.to_dict('records'),
+                style_table={
+                    'width': '100%'
                 },
-            ],
-            style_data_conditional=[
-                {
-                    'if': {'row_index': 5},
-                    'backgroundColor': '#3D9970',
-                    'color': 'white'
-                }
-            ],
-            style_cell = {
-                #'font-family': 'cursive',
-                'font-size': '26px',
-                'text-align': 'center'
-            },
-        )
+                style_cell_conditional=[
+                    {
+                        'if': {'column_id': 'Regions'},
+                        'textAlign': 'left'
+                    },
+                ],
+                style_data_conditional=[
+                    {
+                        'if': {'row_index': 5},
+                        'backgroundColor': '#3D9970',
+                        'color': 'white'
+                    }
+                ],
+                style_cell = {
+                    'font-family': "'Oswald', sans-serif",
+                    'font-size': '26px',
+                    'text-align': 'center'
+                },
+            )
+        ]),
+        html.Div(className='right')
     ])
 
-APP_LAYOUTS=[layout_func1,layout_func2,layout_func4]
+def layout_func5():
+    weekDays = ("Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday")
+    now=datetime.date.today().weekday()
+    return html.Div(children=[
+        html.H1(children='Manitoba COVID Cases'),
+        html.Div(className='left'),
+        html.Div(className='middle',children=[
+            html.H1(children='What day is it?'),
+            html.H1(children='Today is:'),
+            html.H1(children=weekDays[now],style={'color':'#F00'})
+        ]),
+        html.Div(className='right')
+    ])
+
+APP_LAYOUTS=[layout_func5,layout_func1,layout_func2,layout_func4]
 
 def get_data():
     filename="mbdata.dat"
@@ -159,7 +143,7 @@ def get_data():
                 derived_total=derived_total+new
                 thedatetime=datetime.datetime(y,m,d)
                 thedate=np.datetime64(thedatetime)
-                print(thedatetime,thedate,new,derived_total)
+                #print(thedatetime,thedate,new,derived_total)
                 dates.append(thedate)
                 news.append(new)
                 totals.append(derived_total)
@@ -195,4 +179,4 @@ def CHANGE_PAGE(n_intervals):
     return func()
 
 if __name__ == '__main__':
-    app.run_server(debug=False)
+    app.run_server(debug=True)
