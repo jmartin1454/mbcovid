@@ -18,7 +18,7 @@ INTERVAL = 30
 # app layouts to choose from
 
 def layout_func1():
-    dates,news,totals,recov,hosp,ICU,death,ie,n,pm,south,wpg=get_data()
+    dates,news,totals,recov,hosp,ICU,death,ie,n,pm,south,wpg,tested=get_data()
     return html.Div(children=[
         html.H1(children='Manitoba COVID Cases'),
         dcc.Graph(
@@ -37,7 +37,7 @@ def layout_func1():
     ])
 
 def layout_func2():
-    dates,news,totals,recov,hosp,ICU,death,ie,n,pm,south,wpg=get_data()
+    dates,news,totals,recov,hosp,ICU,death,ie,n,pm,south,wpg,tested=get_data()
     return html.Div(children=[
         html.H1(children='Manitoba COVID Cases'),
         dcc.Graph(
@@ -56,7 +56,7 @@ def layout_func2():
 
 
 def layout_func4():
-    dates,news,totals,recov,hosp,ICU,death,ie,n,pm,south,wpg=get_data()
+    dates,news,totals,recov,hosp,ICU,death,ie,n,pm,south,wpg,tested=get_data()
     data = OrderedDict(
         [
             ("Regions", ["Interlake-Eastern", "Northern", "Prairie-Mountain", "Southern", "Winnipeg", "Total"]),
@@ -98,7 +98,7 @@ def layout_func4():
         html.Div(className='right')
     ])
 
-def layout_func5():
+def layout_day():
     weekDays = ("Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday")
     now=datetime.date.today().weekday()
     return html.Div(children=[
@@ -107,12 +107,31 @@ def layout_func5():
         html.Div(className='middle',children=[
             html.H1(children='What day is it?'),
             html.H1(children='Today is:'),
-            html.H1(children=weekDays[now],style={'color':'#F00'})
+            html.Div(className='fwinfo',children=html.H1(children=weekDays[now]),style={'color':'#F00'})
         ]),
         html.Div(className='right')
     ])
 
-APP_LAYOUTS=[layout_func5,layout_func1,layout_func2,layout_func4]
+def layout_totals():
+    dates,news,totals,recov,hosp,ICU,death,ie,n,pm,south,wpg,tested=get_data()
+    return html.Div(children=[
+        html.H1(children='Manitoba COVID Cases'),
+        html.Div(className='left'),
+        html.Div(className='middle',children=[
+            html.H1(children='Statistics'),
+            html.Div(className='note',children=[
+                html.Div(className='info2',children=[html.H3('Total Cases'),html.H1(totals[-1])]),
+                html.Div(className='success',children=[html.H3('Recovered'),html.H1(recov)]),
+                html.Div(className='warning',children=[html.H3('Active Cases'),html.H1(totals[-1]-recov-death)]),
+                html.Div(className='danger',children=[html.H3('Deaths'),html.H1(death)]),
+                html.Div(className='info',children=[html.H3('Tests Completed'),html.H1(tested)]),
+            ])
+        ]),
+        html.Div(className='right')
+    ])
+
+
+APP_LAYOUTS=[layout_day,layout_totals,layout_func1,layout_func2,layout_func4]
 
 def get_data():
     filename="mbdata.dat"
@@ -129,6 +148,7 @@ def get_data():
     pm=0
     south=0
     wpg=0
+    tested=0
     with open(filename,"r") as f:
         for line in f:
             line=line.partition('#')[0]
@@ -158,8 +178,9 @@ def get_data():
                 pm=integers[11]
                 south=integers[12]
                 wpg=integers[13]
-    #print(dates,news,totals,recov,hosp,ICU,death,ie,n,pm,south,wpg)
-    return dates,news,totals,recov,hosp,ICU,death,ie,n,pm,south,wpg
+            if(len(integers)>=15):
+                tested=integers[14]
+    return dates,news,totals,recov,hosp,ICU,death,ie,n,pm,south,wpg,tested
 
 #app.config.supress_callback_exceptions = True
 app.layout = html.Div([
@@ -179,4 +200,4 @@ def CHANGE_PAGE(n_intervals):
     return func()
 
 if __name__ == '__main__':
-    app.run_server(debug=False)
+    app.run_server(debug=True)
