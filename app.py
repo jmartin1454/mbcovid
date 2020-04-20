@@ -11,6 +11,11 @@ from collections import OrderedDict
 import numpy as np
 import datetime
 
+# for twitter scrape
+from bs4 import BeautifulSoup
+import requests
+
+
 app = Dash(__name__)
 
 INTERVAL = 30
@@ -107,7 +112,7 @@ def layout_day():
         html.Div(className='middle',children=[
             html.H1(children='What day is it?'),
             html.H1(children='Today is:'),
-            html.Div(className='fwinfo',children=html.H1(children=weekDays[now]),style={'color':'#F00'})
+            html.Div(className='fwinfo',children=html.P(children=weekDays[now]),style={'color':'#F00'})
         ]),
         html.Div(className='right')
     ])
@@ -130,8 +135,24 @@ def layout_totals():
         html.Div(className='right')
     ])
 
+def layout_news():
+    res=requests.get('https://twitter.com/ChrisDca')
+    bs=BeautifulSoup(res.content,'html5lib')
+    tweet=bs.find_all('div',{'class':'tweet'})[0]
+    tweet_text_container=tweet.find('div',{'class':'js-tweet-text-container'})
+    message=tweet_text_container.find('a').previousSibling.strip()
+    print(message)
+    return html.Div(children=[
+        html.H1(children='Manitoba COVID Cases'),
+        html.Div(className='left'),
+        html.Div(className='middle',children=[
+            html.H1(children='News from https://chrisd.ca'),
+            html.Div(className='fwnews',children=html.P(className='chrisd1',children=message))
+        ]),
+        html.Div(className='right')
+    ])
 
-APP_LAYOUTS=[layout_day,layout_totals,layout_func1,layout_func2,layout_func4]
+APP_LAYOUTS=[layout_news,layout_day,layout_totals,layout_func1,layout_func2,layout_func4]
 
 def get_data():
     filename="mbdata.dat"
